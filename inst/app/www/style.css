@@ -1,0 +1,4 @@
+/* inst/app/www/style.css */
+body { line-height: 1.5; }
+.card { border-radius: 14px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+.navbar { font-weight: 600; }
