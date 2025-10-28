@@ -2,13 +2,16 @@
 % Please edit documentation in R/table_burden.R
 \name{table_burden}
 \alias{table_burden}
-\title{Present burden table (Germany by default)}
+\title{Build a formatted burden table}
 \usage{
-table_burden(dataset = germany_burden)
+table_burden(data)
 }
 \arguments{
-\item{dataset}{Data frame to display (default: germany_burden)}
+\item{data}{Tibble with hai_type, cases, deaths, dalys, dalys_per100k.}
+}
+\value{
+A gt table.
 }
 \description{
-Present burden table (Germany by default)
+Build a formatted burden table
 }

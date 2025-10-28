@@ -13,7 +13,7 @@ editor_options:
 library(asg4) 
 library(ggplot2) 
 library(dplyr)
-library(tidyverse)
+library(tidyr)
 ```
 
 ## 1. Introduction
@@ -37,7 +37,8 @@ the **BHAI R package** and reflect the representative hospital sample
 used in that study.
 
 ```{r}
-metadata_bhai
+asg4::metadata_bhai |>
+  knitr::kable(col.names = c("Item", "Value"))
 ```
 
 ### 2.1 Assumption and Limitations
@@ -61,9 +62,9 @@ as HAP and BSI, while UTI and CDI are higher compared to the region.
 
 ```{r}
 library(tidyr)
-combined <- asg4::germany_burden %>%
-  select(hai_type, dalys_per100k) %>%
-  mutate(country = "Germany") %>%
+combined <- asg4::germany_burden |>
+  select(hai_type, dalys_per100k) |>
+  mutate(country = "Germany") |>
   bind_rows(asg4::eu_eea_burden %>%
               mutate(country = "EU/EEA"))
 
@@ -82,11 +83,11 @@ While within Germany, we could also know how each infection contributes
 to total DALYs burden
 
 ```{r}
-asg4::germany_burden %>%
+asg4::germany_burden |>
 mutate(
 share = dalys_per100k / sum(dalys_per100k),
 label = paste0(hai_type, " (", round(share * 100, 1), "%)")
-) %>%
+) |>
 ggplot(aes(x = "", y = share, fill = hai_type)) +
 geom_col(width = 1, color = "white") +
 coord_polar(theta = "y") +

@@ -4,13 +4,19 @@
 \alias{plot_tradeoff}
 \title{Plot DALYs per 100,000 by infection type}
 \usage{
-plot_tradeoff(dataset = germany_burden, country = "Germany")
+plot_tradeoff(data, region = "Region")
 }
 \arguments{
-\item{dataset}{Data frame of hai_type and dalys_per100k (germany_burden or eu_eea_burden)}
+\item{data}{Data frame with columns \code{hai_type} and \code{dalys_per100k}.}
 
-\item{country}{Title label ("Germany" or "EU/EEA")}
+\item{region}{Character string specifying region name (e.g. "Germany" or "EU/EEA").}
+}
+\value{
+A ggplot object showing DALYs by infection type.
 }
 \description{
 Plot DALYs per 100,000 by infection type
+}
+\examples{
+plot_tradeoff(asg4::germany_burden, "Germany")
 }
