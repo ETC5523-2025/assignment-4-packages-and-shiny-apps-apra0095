@@ -1,168 +1,225 @@
-# inst/app/app.R
+# ASCII ONLY
+
 library(shiny)
 library(bslib)
 library(ggplot2)
 library(dplyr)
 library(gt)
 
-# packaged data
+# packaged data (no read.csv):
 germany <- asg4::germany_burden
 eu      <- asg4::eu_eea_burden
 meta    <- asg4::metadata_bhai
 
+# helper: long names for clarity in labels and tables
+pretty_hai <- c(
+  "HAP" = "Hospital-acquired pneumonia",
+  "UTI" = "Urinary tract infection",
+  "BSI" = "Primary bloodstream infection",
+  "SSI" = "Surgical site infection",
+  "CDI" = "Clostridioides difficile infection"
+)
+
 ui <- page_navbar(
-  title = "Germany HAI Burden (2011–2012)",
+  title = "Germany HAI Burden (2011-2012)",
   theme = bs_theme(bootswatch = "flatly"),
+  # custom css for subtle polish
   tags$head(tags$link(rel = "stylesheet", href = "www/style.css")),
 
   nav_panel(
     "Overview",
 
-    # ---------- KPI row (value boxes are responsive + no scrollbars)
-    layout_column_wrap(
-      width = 1/3,
-      value_box(title = textOutput("kpi_title_sum"), value = textOutput("kpi_sum"),
-                p("Sum of DALYs per 100k (selected infections)")),
-      value_box(title = "Difference vs other region", value = textOutput("kpi_diff"),
-                p("Current − Other (same infections)")),
-      value_box(title = "Top infection (share)", value = textOutput("kpi_top_name"),
-                p(textOutput("kpi_top_share")))
+    # KPI cards (reactive)
+    layout_columns(
+      col_widths = c(4,4,4),
+      value_box(
+        title = textOutput("kpi_title_sum"),
+        value = textOutput("kpi_value_sum"),
+        showcase = icon("bar-chart-line"),
+        theme_color = "primary"
+      ),
+      value_box(
+        title = "Difference vs other region",
+        value = textOutput("kpi_value_diff"),
+        showcase = icon("arrows-alt-h"),
+        theme_color = "warning"
+      ),
+      value_box(
+        title = "Top infection (share)",
+        value = textOutput("kpi_value_top"),
+        showcase = icon("award"),
+        theme_color = "success"
+      )
     ),
 
+    # comparison bar plot (reactive to selections)
     card(
-      card_header("Selected infections: Germany vs EU/EEA (DALYs per 100k)"),
-      card_body(plotOutput("compare_plot", height = "240px"))
+      card_header("Selected infections: Germany vs EU-EEA (DALYs per 100k)"),
+      plotOutput("p_compare", height = 260)
     ),
 
-    hr(),
-
-    fluidRow(
-      column(
-        4,
-        radioButtons("country", "Country", c("Germany", "EU/EEA"), inline = TRUE),
+    layout_sidebar(
+      sidebar = sidebar(
+        h4("Controls"),
+        radioButtons(
+          "country", "Country",
+          c("Germany", "EU/EEA"), inline = TRUE
+        ),
         checkboxGroupInput(
           "types", "Infection types",
-          choices  = unique(germany$hai_type),
-          selected = unique(germany$hai_type)
+          choices  = names(pretty_hai),
+          selected = names(pretty_hai)
         ),
-        helpText("Assumption: EU/EEA McCabe distribution is used for Germany (see vignette).")
+        hr(),
+        h5("Field definitions"),
+        tags$ul(
+          tags$li(tags$b("hai_type:"), " infection category (HAP, UTI, BSI, SSI, CDI)"),
+          tags$li(tags$b("cases:"), " estimated annual cases per 100k population"),
+          tags$li(tags$b("deaths:"), " attributable deaths per 100k"),
+          tags$li(tags$b("dalys:"), " disability-adjusted life years per 100k (absolute)"),
+          tags$li(tags$b("dalys_per100k:"), " DALYs per 100k (used for charts)")
+        ),
+        hr(),
+        h5("How to read the outputs"),
+        tags$ul(
+          tags$li("Bar heights show burden per 100k. Higher bars mean higher health loss."),
+          tags$li("Use the checkboxes to focus on specific infection types."),
+          tags$li("The KPIs summarise the selected infections only."),
+          tags$li("A positive diff means the chosen region is higher than the other region.")
+        ),
+        hr(),
+        em("Assumption: EU-EEA McCabe severity distribution is used for Germany (see vignette).")
       ),
-      column(
-        8,
-        card(card_body(plotOutput("p_burden", height = "260px"))),
-        gt_output("t_burden")
+
+      # right content: single region bar chart + data table
+      layout_columns(
+        col_widths = c(7,5),
+        card(
+          card_header(textOutput("single_title")),
+          plotOutput("p_single", height = 320)
+        ),
+        card(
+          card_header("Data table"),
+          gt_output("t_burden")
+        )
       )
     )
   ),
 
   nav_panel(
     "About",
-    tags$p("Data: Zacher et al. (2019), Euro Surveill 24(46):1900135."),
-    tags$p("DALYs via BHAI using ECDC PPS 2011–2012; packaged data only.")
+    card(
+      h4("Study context and packaged data"),
+      p("Medians from Zacher et al. (2019) using ECDC PPS 2011-2012 and the BHAI approach.
+        We package the Germany and EU-EEA DALY burden for five HAIs."),
+      tags$ul(
+        tags$li("Source: Zacher B. et al., Eurosurveillance 2019 (DOI: 10.2807/1560-7917.ES.2019.24.46.1900135)"),
+        tags$li("Method: BHAI R package; PPS to annual incidence conversion per ECDC."),
+        tags$li("Important assumption: EU-EEA McCabe distribution used for Germany.")
+      ),
+      h5("Metadata"),
+      tableOutput("t_meta"),
+      hr(),
+      p("This app only uses data embedded in the package. No external files are read.")
+    )
   )
 )
 
 server <- function(input, output, session) {
 
-  # ---------- Reactives
-  sel_types <- reactive(input$types)
-
-  cur_df <- reactive({
-    if (input$country == "Germany") germany else eu
+  # which dataset is current vs "other"
+  current_data <- reactive({
+    if (identical(input$country, "Germany")) germany else eu
   })
-  other_df <- reactive({
-    if (input$country == "Germany") eu else germany
+  other_data <- reactive({
+    if (identical(input$country, "Germany")) eu else germany
   })
 
-  cur_sum <- reactive({
-    cur_df() |>
-      filter(hai_type %in% sel_types()) |>
-      summarise(s = sum(dalys_per100k, na.rm = TRUE)) |>
-      pull(s)
+  # selected subset for all downstream outputs
+  sel_current <- reactive({
+    req(input$types)
+    current_data() |> filter(hai_type %in% input$types)
   })
-  other_sum <- reactive({
-    other_df() |>
-      filter(hai_type %in% sel_types()) |>
-      summarise(s = sum(dalys_per100k, na.rm = TRUE)) |>
-      pull(s)
-  })
-  top_row <- reactive({
-    cur_df() |>
-      filter(hai_type %in% sel_types()) |>
-      arrange(desc(dalys_per100k)) |>
-      slice(1)
+  sel_other <- reactive({
+    req(input$types)
+    other_data() |> filter(hai_type %in% input$types)
   })
 
-  # ---------- KPI outputs
+  # KPIs -------------------------------------------------------------
+
   output$kpi_title_sum <- renderText({
-    paste0(input$country, " DALYs/100k (sum)")
-  })
-  output$kpi_sum  <- renderText({ round(cur_sum(), 1) })
-  output$kpi_diff <- renderText({ sprintf("%+.1f", cur_sum() - other_sum()) })
-  output$kpi_top_name <- renderText({
-    if (nrow(top_row()) == 0) "—" else top_row()$hai_type
-  })
-  output$kpi_top_share <- renderText({
-    if (nrow(top_row()) == 0) return("")
-    share <- top_row()$dalys_per100k / max(cur_sum(), 1e-9)
-    paste0(round(share * 100, 1), "% of selected total")
+    paste(input$country, "DALYs per 100k (sum)")
   })
 
-  # ---------- Mini comparison plot
-  output$compare_plot <- renderPlot({
-    req(sel_types())
-    g <- germany |> filter(hai_type %in% sel_types()) |> mutate(country = "Germany")
-    e <- eu      |> filter(hai_type %in% sel_types()) |> mutate(country = "EU/EEA")
-    combined <- bind_rows(g, e); req(nrow(combined) > 0)
+  output$kpi_value_sum <- renderText({
+    sprintf("%.1f", sum(sel_current()$dalys_per100k, na.rm = TRUE))
+  })
 
-    ggplot(combined, aes(hai_type, dalys_per100k, fill = country)) +
+  output$kpi_value_diff <- renderText({
+    cur <- sum(sel_current()$dalys_per100k, na.rm = TRUE)
+    oth <- sum(sel_other()$dalys_per100k, na.rm = TRUE)
+    sprintf("%+.1f", cur - oth)
+  })
+
+  output$kpi_value_top <- renderText({
+    df <- sel_current() |>
+      mutate(share = dalys_per100k / sum(dalys_per100k)) |>
+      arrange(desc(share)) |>
+      slice(1)
+    nm <- pretty_hai[df$hai_type]
+    if (is.na(nm)) nm <- df$hai_type
+    paste0(nm, "  (", sprintf("%.1f", df$share * 100), "%)")
+  })
+
+  # Comparison plot (two regions, filtered infections)
+  output$p_compare <- renderPlot({
+    req(input$types)
+    g <- germany |> filter(hai_type %in% input$types) |>
+      mutate(country = "Germany")
+    e <- eu |> filter(hai_type %in% input$types) |>
+      mutate(country = "EU/EEA")
+    comb <- bind_rows(g, e)
+    ggplot(comb, aes(hai_type, dalys_per100k, fill = country)) +
       geom_col(position = "dodge") +
-      labs(x = NULL, y = "DALYs per 100k") +
-      theme_minimal(base_size = 12) +
-      theme(legend.position = "top", plot.margin = margin(6, 6, 6, 6))
+      labs(x = "Infection type", y = "DALYs per 100,000", fill = "Region") +
+      scale_x_discrete(labels = pretty_hai) +
+      theme_minimal(base_size = 12)
   })
 
-  # ---------- Main plot
-  output$p_burden <- renderPlot({
-    req(sel_types())
-    df <- cur_df() |> filter(hai_type %in% sel_types()); req(nrow(df) > 0)
+  # Single-region plot
+  output$single_title <- renderText({
+    paste(input$country, ": DALYs per 100,000")
+  })
 
-    ggplot(df, aes(hai_type, dalys_per100k)) +
+  output$p_single <- renderPlot({
+    ggplot(sel_current(), aes(hai_type, dalys_per100k)) +
       geom_col() +
-      labs(
-        x = "Infection type", y = "DALYs per 100,000",
-        title = paste0(input$country, ": DALYs per 100,000")
-      ) +
-      theme_minimal(base_size = 12) +
-      theme(plot.margin = margin(6, 6, 6, 6))
+      labs(x = "Infection type", y = "DALYs per 100,000") +
+      scale_x_discrete(labels = pretty_hai) +
+      theme_minimal(base_size = 12)
   })
 
-  # ---------- Table with fixed schema
-  table_df <- reactive({
-    df <- cur_df() |> filter(hai_type %in% sel_types())
-    needed <- c("hai_type", "cases", "deaths", "dalys", "dalys_per100k")
-    for (nm in needed) if (!nm %in% names(df)) df[[nm]] <- NA_real_
-    df[, needed, drop = FALSE]
-  })
-
+  # Table (uses gt, formatted; no non-ASCII)
   output$t_burden <- render_gt({
-    df <- table_df()
-    note <- if (input$country == "EU/EEA")
-      "EU/EEA values are per 100,000 population (Zacher et al., 2019)."
-    else
-      "Germany values are medians from the representative PPS sample."
-
-    gt(df) |>
+    df <- sel_current() |>
+      mutate(hai_type = pretty_hai[hai_type]) |>
+      select(hai_type, cases, deaths, dalys, dalys_per100k)
+    gt(df, rowname_col = NULL) |>
       cols_label(
-        hai_type      = "Infection type",
-        cases         = "Cases",
-        deaths        = "Deaths",
-        dalys         = "DALYs",
+        hai_type = "Infection type",
+        cases = "Cases",
+        deaths = "Deaths",
+        dalys = "DALYs",
         dalys_per100k = "DALYs per 100k"
       ) |>
-      fmt_number(columns = c(cases, deaths, dalys, dalys_per100k), decimals = 1) |>
-      fmt_missing(everything(), missing_text = "—") |>
-      tab_source_note(note)
+      fmt_number(everything(), decimals = 1) |>
+      fmt_missing(everything(), missing_text = "-") |>
+      tab_footnote(footnote = "Values are per 100k population.")
+  })
+
+  # metadata table in About
+  output$t_meta <- renderTable({
+    as.data.frame(meta, stringsAsFactors = FALSE)
   })
 }
 
