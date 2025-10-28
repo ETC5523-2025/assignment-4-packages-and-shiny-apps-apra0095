@@ -7,6 +7,6 @@ Data are medians from Zacher et al. (2019) computed with the BHAI R package.
 ```r
 # from GitHub (remotes required)
 install.packages("remotes")
-remotes::install_github("apra0095/assignment-4-packages-and-shiny-apps-apra0095")
+remotes::install_github("ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095")
 library(asg4)
 launch_app()
