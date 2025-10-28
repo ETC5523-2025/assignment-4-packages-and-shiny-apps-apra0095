@@ -1,18 +1,16 @@
 Package: asg4
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Germany vs EU/EEA HAI Burden (2011–2012)
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Izzul Fattah", "Aji Pratama", email = "apra0095@student.monash.edu", role = c("aut","cre"))
+Description: Datasets and a Shiny app to compare DALYs for five HAIs between Germany and the EU/EEA using medians from Zacher et al. (2019).
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
-Depends: 
-    R (>= 3.5)
-LazyData: true
+RoxygenNote: 7.3.2
+Depends: R (>= 4.1)
+Imports: 
+    shiny, bslib, ggplot2, dplyr, gt
 Suggests: 
-    knitr,
-    rmarkdown
+    knitr, rmarkdown, testthat (>= 3.0.0)
 VignetteBuilder: knitr
