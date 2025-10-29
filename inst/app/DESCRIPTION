@@ -1,0 +1,13 @@
+Package: asg4-app
+Type: Shiny
+Title: asg4 Shiny App
+Version: 0.0.1
+Imports:
+    asg4,
+    shiny,
+    bslib,
+    ggplot2,
+    dplyr,
+    gt
+Remotes:
+    ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095
