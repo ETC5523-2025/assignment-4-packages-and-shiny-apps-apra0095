@@ -1,3 +1,10 @@
+if (!requireNamespace("asg4", quietly = TRUE)) {
+  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+  remotes::install_github("ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095")
+}
+
+
+
 # ASCII ONLY
 
 library(shiny)
