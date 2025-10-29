@@ -1,25 +1,14 @@
-if (!requireNamespace("asg4", quietly = TRUE)) {
-  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-  remotes::install_github("ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095")
-}
-
-
-
-# ASCII ONLY
-
 library(shiny)
 library(bslib)
-library(bsicons)
 library(ggplot2)
 library(dplyr)
 library(gt)
 
-# packaged data (no read.csv)
+# packaged data
 germany <- asg4::germany_burden
 eu      <- asg4::eu_eea_burden
 meta    <- asg4::metadata_bhai
 
-# labels for plots/tables
 pretty_hai <- c(
   "HAP" = "Hospital-acquired pneumonia",
   "UTI" = "Urinary tract infection",
@@ -29,17 +18,16 @@ pretty_hai <- c(
 )
 
 ui <- page_navbar(
-  tags$meta(name = "viewport",
-            content = "width=device-width, initial-scale=1, maximum-scale=1"),
-  title  = "Germany HAI Burden (2011-2012)",
-  theme  = bs_theme(bootswatch = "flatly"),
-  fillable = TRUE,
-  tags$head(tags$link(rel = "stylesheet", href = "www/style.css")),
+  tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
+  title = "Germany HAI Burden (2011-2012)",
+  theme = bs_theme(bootswatch = "flatly"),
+
+
+  tags$head(htmltools::includeCSS("www/style.css")),
 
   nav_panel(
     "Overview",
 
-    # KPI row
     layout_columns(
       breakpoint = "lg",
       col_widths = c(4, 4, 4),
@@ -47,43 +35,33 @@ ui <- page_navbar(
       value_box(
         title    = textOutput("kpi_title_sum"),
         value    = textOutput("kpi_value_sum"),
-        showcase = bs_icon("list"),
-        theme    = value_box_theme(bg = "primary")
+        showcase = icon("list"),
+        class    = "kpi kpi-slim"
       ),
-
       value_box(
         title    = "Difference vs other region",
         value    = textOutput("kpi_value_diff"),
-        showcase = bs_icon("arrow-left-right"),
-        theme    = value_box_theme(bg = "warning")
+        showcase = icon("arrows-alt-h"),  # FA5 name that actually exists
+        class    = "kpi kpi-slim"
       ),
-
       value_box(
         title    = "Top infection (share)",
         value    = textOutput("kpi_value_top"),
-        showcase = bs_icon("trophy"),
-        theme    = value_box_theme(bg = "success"),
-        class    = "kpi-trophy"
+        showcase = icon("trophy"),
+        class    = "kpi kpi-trophy"
       )
     ),
 
-    # Compact compare strip (height-safe across browsers)
     card(
-      height = 320,
       card_header("Selected infections: Germany vs EU/EEA (DALYs per 100k)"),
-      card_body_fill(
-        plotOutput("p_compare", height = "100%")
-      )
+      plotOutput("p_compare", height = 340)
     ),
 
-    # Sidebar + main area
+
     layout_sidebar(
       sidebar = sidebar(
-        title       = "Controls",
-        width       = 280,
-        collapsible = TRUE,
-        resizable   = TRUE,
-        open        = "desktop",
+        title = "Controls",
+        width = 300,
 
         h5("Country"),
         radioButtons("country", NULL, c("Germany", "EU/EEA"), inline = TRUE),
@@ -110,22 +88,19 @@ ui <- page_navbar(
           tags$li("Higher bars mean higher health loss."),
           tags$li("Checkboxes filter infection types."),
           tags$li("KPIs summarise the selected types only."),
-          tags$li("Positive diff: chosen region greater than other region.")
+          tags$li("Positive diff: chosen region > other region.")
         ),
         hr(),
         tags$em("Assumption: EU/EEA McCabe distribution is used for Germany (see vignette).")
       ),
-
+      collapsible = FALSE,
       layout_columns(
         breakpoint = "lg",
-        col_widths = c(7, 5),
+        col_widths = c(8, 4),
 
         card(
           card_header(textOutput("single_title")),
-          height = 460,
-          card_body_fill(
-            plotOutput("p_single", height = "100%")
-          )
+          plotOutput("p_single", height = 360)
         ),
 
         card(
@@ -156,7 +131,12 @@ ui <- page_navbar(
 
 server <- function(input, output, session) {
 
-  # dataset selectors
+  updateCheckboxGroupInput(
+    session, "types",
+    choices = names(pretty_hai),
+    selected = names(pretty_hai)
+  )
+
   current_data <- reactive({
     if (identical(input$country, "Germany")) germany else eu
   })
@@ -164,7 +144,6 @@ server <- function(input, output, session) {
     if (identical(input$country, "Germany")) eu else germany
   })
 
-  # filtered subsets
   sel_current <- reactive({
     req(input$types)
     current_data() %>% filter(hai_type %in% input$types)
@@ -174,24 +153,23 @@ server <- function(input, output, session) {
     other_data() %>% filter(hai_type %in% input$types)
   })
 
-  # KPIs
   output$kpi_title_sum <- renderText({
     paste(input$country, "DALYs per 100k (sum)")
   })
-
   output$kpi_value_sum <- renderText({
     sprintf("%.1f", sum(sel_current()$dalys_per100k, na.rm = TRUE))
   })
-
   output$kpi_value_diff <- renderText({
     cur <- sum(sel_current()$dalys_per100k, na.rm = TRUE)
-    oth <- sum(sel_other()$dalys_per100k, na.rm = TRUE)
+    oth <- sum(sel_other()$dalys_per100k,   na.rm = TRUE)
     sprintf("%+.1f", cur - oth)
   })
-
   output$kpi_value_top <- renderText({
-    df <- sel_current() %>%
-      mutate(share = dalys_per100k / sum(dalys_per100k)) %>%
+    df <- sel_current()
+    tot <- sum(df$dalys_per100k, na.rm = TRUE)
+    if (!is.finite(tot) || tot <= 0 || nrow(df) == 0) return("No data")
+    df <- df %>%
+      mutate(share = dalys_per100k / tot) %>%
       arrange(desc(share)) %>%
       slice(1)
     nm <- pretty_hai[df$hai_type]
@@ -199,41 +177,29 @@ server <- function(input, output, session) {
     paste0(nm, " (", sprintf("%.1f", df$share * 100), "%)")
   })
 
-  # Compare plot
   output$p_compare <- renderPlot({
     req(input$types)
     g <- germany %>% filter(hai_type %in% input$types) %>% mutate(country = "Germany")
     e <- eu       %>% filter(hai_type %in% input$types) %>% mutate(country = "EU/EEA")
     comb <- bind_rows(g, e)
-
     ggplot(comb, aes(hai_type, dalys_per100k, fill = country)) +
       geom_col(position = "dodge") +
       labs(x = "Infection type", y = "DALYs per 100,000", fill = "Region") +
       scale_x_discrete(labels = pretty_hai) +
-      guides(fill = guide_legend(nrow = 1, byrow = TRUE)) +
-      theme_minimal(base_size = 12) +
-      theme(
-        legend.position = "top",
-        legend.text = element_text(size = 9),
-        plot.margin = margin(4, 8, 4, 8)
-      )
+      theme_minimal(base_size = 12)
   })
 
-  # Single-region plot
   output$single_title <- renderText({
     paste(input$country, ": DALYs per 100,000")
   })
-
   output$p_single <- renderPlot({
     ggplot(sel_current(), aes(hai_type, dalys_per100k)) +
       geom_col() +
       labs(x = "Infection type", y = "DALYs per 100,000") +
       scale_x_discrete(labels = pretty_hai) +
-      theme_minimal(base_size = 12) +
-      theme(plot.margin = margin(4, 8, 4, 8))
+      theme_minimal(base_size = 12)
   })
 
-  # Data table
   output$t_burden <- render_gt({
     df <- sel_current() %>%
       mutate(hai_type = pretty_hai[hai_type]) %>%
@@ -247,12 +213,11 @@ server <- function(input, output, session) {
         dalys         = "DALYs",
         dalys_per100k = "DALYs per 100k"
       ) %>%
-      fmt_number(everything(), decimals = 1) %>%
+      fmt_number(c(cases, deaths, dalys, dalys_per100k), decimals = 1) %>%
       sub_missing(everything(), missing_text = "-") %>%
       tab_footnote(footnote = "Values are per 100k population.")
   })
 
-  # About tab metadata
   output$t_meta <- renderTable({
     as.data.frame(meta, stringsAsFactors = FALSE)
   })

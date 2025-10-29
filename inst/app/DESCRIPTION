@@ -1,13 +1,16 @@
-Package: asg4-app
+Package: asg4app
 Type: Shiny
-Title: asg4 Shiny App
+Title: Germany HAI Burden App
 Version: 0.0.1
+Encoding: UTF-8
+
 Imports:
-    asg4,
     shiny,
     bslib,
     ggplot2,
     dplyr,
-    gt
+    gt,
+    asg4
+
 Remotes:
-    ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095
+    github::ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095

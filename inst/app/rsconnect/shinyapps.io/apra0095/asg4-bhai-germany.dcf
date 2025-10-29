@@ -5,6 +5,6 @@ account: apra0095
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 15902729
-bundleId: 11100138
+bundleId:
 url: https://apra0095.shinyapps.io/asg4-bhai-germany/
 version: 1
