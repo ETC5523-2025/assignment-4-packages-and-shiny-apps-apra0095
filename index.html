@@ -54,7 +54,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="asg4--germany-vs-eueea-hai-burden-20112012">asg4 — Germany vs EU/EEA HAI Burden (2011–2012)<a class="anchor" aria-label="anchor" href="#asg4--germany-vs-eueea-hai-burden-20112012"></a>
 </h1></div>
-<p>This package ships tidy, documented datasets and a Shiny app to explore the DALY burden of five healthcare-associated infections for Germany vs the EU/EEA (2011–2012). Data are medians from Zacher et al. (2019) computed with the BHAI R package.</p>
+<p>This package contains tidy, documented datasets and a Shiny app to explore the DALY burden of five healthcare-associated infections for Germany vs the EU/EEA (2011–2012). Data are medians from Zacher et al. (2019) computed with the BHAI R package.</p>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
@@ -64,7 +64,19 @@
 <div class="section level2">
 <h2 id="install-package">Install Package<a class="anchor" aria-label="anchor" href="#install-package"></a>
 </h2>
-<p>```r # from GitHub (remotes required) install.packages(“remotes”) remotes::install_github(“ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095”) library(asg4) launch_app()</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install from GitHub (requires remotes)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load and run the Shiny app</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095" class="external-link">asg4</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/launch_app.html">launch_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="interactive-shiny-apps">Interactive Shiny Apps<a class="anchor" aria-label="anchor" href="#interactive-shiny-apps"></a>
+</h2>
+<p><a href="https://apra0095.shinyapps.io/asg4-bhai-germany/" class="external-link uri">https://apra0095.shinyapps.io/asg4-bhai-germany/</a></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
