@@ -1,4 +1,4 @@
-# asg4 — Germany vs EU/EEA HAI Burden (2011–2012
+# asg4 — Germany vs EU/EEA HAI Burden (2011–2012)
 This package ships tidy, documented datasets and a Shiny app to explore the DALY burden of five healthcare-associated infections for Germany vs the EU/EEA (2011–2012).
 Data are medians from Zacher et al. (2019) computed with the BHAI R package.
 
