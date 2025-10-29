@@ -7,7 +7,7 @@
 plot_tradeoff(data, region = "Region")
 }
 \arguments{
-\item{data}{Data frame with columns \code{hai_type} and \code{dalys_per100k}.}
+\item{data}{Data frame with columns `hai_type` and `dalys_per100k`.}
 
 \item{region}{Character string specifying region name (e.g. "Germany" or "EU/EEA").}
 }

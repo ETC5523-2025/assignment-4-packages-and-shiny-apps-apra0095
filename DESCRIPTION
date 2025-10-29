@@ -1,25 +1,30 @@
 Package: asg4
-Title: Germany vs EU/EEA HAI Burden (2011–2012)
+Title: Germany vs EU/EEA HAI Burden (2011-2012)
 Version: 0.1.0
 Authors@R: 
-    person("Izzul Fattah", "Aji Pratama", email = "apra0095@student.monash.edu", role = c("aut","cre"))
-Description: Datasets and a Shiny app to compare DALYs for five HAIs between Germany and the EU/EEA using medians from Zacher et al. (2019).
+    person(given = "Izzul Fattah Aji",
+           family = "Pratama",
+           role = c("aut", "cre"),
+           email = "apra0095@student.monash.edu")
+Description: Data, functions, and a Shiny app to explore BHAI burden estimates
+    for five healthcare-associated infections in Germany vs EU/EEA (2011-2012).
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
-Depends: R (>= 4.1)
+URL: https://github.com/ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095, https://etc5523-2025.github.io/assignment-4-packages-and-shiny-apps-apra0095/
+BugReports: https://github.com/ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095/issues
+Depends: 
+    R (>= 4.2)
 Imports:
-    ggplot2,
-    gt,
     shiny,
-    rlang
-Suggests:
     bslib,
+    ggplot2,
     dplyr,
-    tidyr,
+    gt
+Suggests:
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    bsicons,
+    tidyr
 VignetteBuilder: knitr
+Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.3.3

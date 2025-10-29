@@ -7,20 +7,20 @@
 \format{
 A tibble with 5 rows x 5 columns:
 \describe{
-\item{hai_type}{Infection type: HAP, UTI, BSI, SSI, CDI}
-\item{cases}{Estimated annual cases (median)}
-\item{deaths}{Attributable deaths (median)}
-\item{dalys}{DALYs (median)}
-\item{dalys_per100k}{DALYs per 100,000 population (median)}
+  \item{hai_type}{Infection type: HAP, UTI, BSI, SSI, CDI}
+  \item{cases}{Estimated annual cases (median)}
+  \item{deaths}{Attributable deaths (median)}
+  \item{dalys}{DALYs (median)}
+  \item{dalys_per100k}{DALYs per 100,000 population (median)}
 }
 
 A tibble with 5 rows and 5 variables:
 \describe{
-\item{hai_type}{HAP, UTI, BSI, SSI, CDI}
-\item{cases}{Estimated cases (count)}
-\item{deaths}{Attributable deaths (count)}
-\item{dalys}{DALYs (count)}
-\item{dalys_per100k}{DALYs per 100,000 population}
+  \item{hai_type}{HAP, UTI, BSI, SSI, CDI}
+  \item{cases}{Estimated cases (count)}
+  \item{deaths}{Attributable deaths (count)}
+  \item{dalys}{DALYs (count)}
+  \item{dalys_per100k}{DALYs per 100,000 population}
 }
 }
 \source{
