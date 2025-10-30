@@ -1,9 +1,12 @@
+/* kpi layout */
+.value-box.kpi {
+  min-height: 100px;
+  padding: 8px 10px;
+}
 
-.value-box.kpi { min-height: 96px; padding: 8px 10px; }
-
-
-.value-box.kpi .title{
-  font-size: 0.9rem;
+.value-box.kpi .value-box-title,
+.bslib-value-box.kpi .value-box-title {
+  font-size: 0.95rem;
   line-height: 1.1;
   margin-bottom: 2px;
   white-space: nowrap;
@@ -11,40 +14,73 @@
   text-overflow: ellipsis;
 }
 
-
-.value-box.kpi .value{
-  font-size: clamp(1.0rem, 1.25vw, 1.55rem);
+.value-box.kpi .value-box-value,
+.bslib-value-box.kpi .value-box-value {
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
+  line-height: 1.15;
   font-weight: 700;
-  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* right kpi (no icon) */
+.value-box.kpi-trophy,
+.bslib-value-box.kpi-trophy {
+  padding-left: 10px;
+}
 
-.value-box.kpi-trophy .value{
-  font-size: clamp(0.95rem, 1.05vw, 1.2rem);
+.value-box.kpi-trophy .value-box-value,
+.bslib-value-box.kpi-trophy .value-box-value {
+  font-size: clamp(1rem, 1.25vw, 1.35rem);
   line-height: 1.15;
   white-space: normal;
   word-break: break-word;
 }
 
+/* make ALL kpis in this row non-hover */
+.nohover-kpi a.bslib-value-box,
+.nohover-kpi a.value-box {
+  background-color: inherit;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+  cursor: default;
+  text-decoration: none;
+}
 
-.card .plot-output, .plot-output { width: 100%; }
+.nohover-kpi a.bslib-value-box:hover,
+.nohover-kpi a.value-box:hover,
+.nohover-kpi a.bslib-value-box:focus,
+.nohover-kpi a.value-box:focus {
+  background-color: inherit;
+  box-shadow: none;
+  transform: none;
+}
 
+/* plots/cards */
+.card .plot-output,
+.plot-output {
+  width: 100%;
+}
 
-.bslib-sidebar{
+.card-header {
+  font-weight: 600;
+}
+
+.card .gt_table {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* sidebar */
+.bslib-sidebar {
   position: sticky;
-  top: 80px;
+  top: 72px;
   align-self: start;
 }
 
-
-.bslib-sidebar-layout .sidebar-toggle,
-.bslib-nav-sidebar-toggle,
-.bslib-sidebar .collapse-toggle{
+/* remove fold button */
+.bslib-sidebar-layout > .collapse-toggle {
   display: none;
 }
-
-
-.card-header{ font-weight: 600; }

@@ -1,3 +1,8 @@
+if (!requireNamespace("asg4", quietly = TRUE)) {
+  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+  remotes::install_github("ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095")
+}
+
 library(shiny)
 library(bslib)
 library(ggplot2)
@@ -21,43 +26,49 @@ ui <- page_navbar(
   tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
   title = "Germany HAI Burden (2011-2012)",
   theme = bs_theme(bootswatch = "flatly"),
-
-
+  # load external css
   tags$head(htmltools::includeCSS("www/style.css")),
 
   nav_panel(
     "Overview",
 
-    layout_columns(
-      breakpoint = "lg",
-      col_widths = c(4, 4, 4),
+    # KPI row
+    div(
+      class = "kpi-row nohover-kpi",
+      layout_columns(
+        breakpoint = "lg",
+        col_widths = c(4, 4, 4),
 
-      value_box(
-        title    = textOutput("kpi_title_sum"),
-        value    = textOutput("kpi_value_sum"),
-        showcase = icon("list"),
-        class    = "kpi kpi-slim"
-      ),
-      value_box(
-        title    = "Difference vs other region",
-        value    = textOutput("kpi_value_diff"),
-        showcase = icon("arrows-alt-h"),  # FA5 name that actually exists
-        class    = "kpi kpi-slim"
-      ),
-      value_box(
-        title    = "Top infection (share)",
-        value    = textOutput("kpi_value_top"),
-        showcase = icon("trophy"),
-        class    = "kpi kpi-trophy"
+        value_box(
+          title    = textOutput("kpi_title_sum"),
+          value    = textOutput("kpi_value_sum"),
+          showcase = icon("list"),
+          class    = "kpi kpi-slim"
+        ),
+
+        value_box(
+          title    = "Difference vs other region",
+          value    = textOutput("kpi_value_diff"),
+          showcase = icon("arrows-alt-h"),
+          class    = "kpi kpi-slim"
+        ),
+
+        # no trophy icon here
+        value_box(
+          title = "Top infection (share)",
+          value = textOutput("kpi_value_top"),
+          class = "kpi kpi-trophy"
+        )
       )
     ),
 
+    # comparison strip
     card(
       card_header("Selected infections: Germany vs EU/EEA (DALYs per 100k)"),
       plotOutput("p_compare", height = 340)
     ),
 
-
+    # fixed sidebar
     layout_sidebar(
       sidebar = sidebar(
         title = "Controls",
@@ -131,9 +142,10 @@ ui <- page_navbar(
 
 server <- function(input, output, session) {
 
+
   updateCheckboxGroupInput(
     session, "types",
-    choices = names(pretty_hai),
+    choices  = names(pretty_hai),
     selected = names(pretty_hai)
   )
 
@@ -153,6 +165,7 @@ server <- function(input, output, session) {
     other_data() %>% filter(hai_type %in% input$types)
   })
 
+  # KPIs
   output$kpi_title_sum <- renderText({
     paste(input$country, "DALYs per 100k (sum)")
   })
@@ -168,15 +181,16 @@ server <- function(input, output, session) {
     df <- sel_current()
     tot <- sum(df$dalys_per100k, na.rm = TRUE)
     if (!is.finite(tot) || tot <= 0 || nrow(df) == 0) return("No data")
-    df <- df %>%
+    top <- df %>%
       mutate(share = dalys_per100k / tot) %>%
       arrange(desc(share)) %>%
       slice(1)
-    nm <- pretty_hai[df$hai_type]
-    if (is.na(nm)) nm <- df$hai_type
-    paste0(nm, " (", sprintf("%.1f", df$share * 100), "%)")
+    nm <- pretty_hai[top$hai_type]
+    if (is.na(nm)) nm <- top$hai_type
+    paste0(nm, " (", sprintf("%.1f", top$share * 100), "%)")
   })
 
+  # comparison chart
   output$p_compare <- renderPlot({
     req(input$types)
     g <- germany %>% filter(hai_type %in% input$types) %>% mutate(country = "Germany")
@@ -189,6 +203,7 @@ server <- function(input, output, session) {
       theme_minimal(base_size = 12)
   })
 
+  # single-region chart
   output$single_title <- renderText({
     paste(input$country, ": DALYs per 100,000")
   })
@@ -200,6 +215,7 @@ server <- function(input, output, session) {
       theme_minimal(base_size = 12)
   })
 
+  # table
   output$t_burden <- render_gt({
     df <- sel_current() %>%
       mutate(hai_type = pretty_hai[hai_type]) %>%
@@ -224,3 +240,5 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
+
