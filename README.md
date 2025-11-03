@@ -23,6 +23,23 @@ launch_app()
 ## Example of Usage
 ``` r
 library(asg4)
+
+combined <- asg4::germany_burden |>
+  select(hai_type, dalys_per100k) |>
+  mutate(country = "Germany") |>
+  bind_rows(asg4::eu_eea_burden %>%
+              mutate(country = "EU/EEA"))
+
+ggplot(combined, aes(x = hai_type, y = dalys_per100k, fill = country)) +
+  geom_col(position = "dodge") +
+  labs(
+    x = "Infection type",
+    y = "DALYs per 100,000",
+    title = "Comparison of Germany vs EU/EEA DALY burden (2011–2012)",
+    fill = "Region"
+  ) +
+  theme_minimal(base_size = 13)
+
 ```
 
 ## Interactive Shiny Apps
