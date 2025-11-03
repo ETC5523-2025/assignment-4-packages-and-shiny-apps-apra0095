@@ -77,7 +77,23 @@
 <h2 id="example-of-usage">Example of Usage<a class="anchor" aria-label="anchor" href="#example-of-usage"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095" class="external-link">asg4</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ETC5523-2025/assignment-4-packages-and-shiny-apps-apra0095" class="external-link">asg4</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">combined</span> <span class="op">&lt;-</span> <span class="fu">asg4</span><span class="fu">::</span><span class="va"><a href="reference/germany_burden.html">germany_burden</a></span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">hai_type</span>, <span class="va">dalys_per100k</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>country <span class="op">=</span> <span class="st">"Germany"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">bind_rows</span><span class="op">(</span><span class="fu">asg4</span><span class="fu">::</span><span class="va"><a href="reference/eu_eea_burden.html">eu_eea_burden</a></span> <span class="op">%&gt;%</span></span>
+<span>              <span class="fu">mutate</span><span class="op">(</span>country <span class="op">=</span> <span class="st">"EU/EEA"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">combined</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">hai_type</span>, y <span class="op">=</span> <span class="va">dalys_per100k</span>, fill <span class="op">=</span> <span class="va">country</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_col</span><span class="op">(</span>position <span class="op">=</span> <span class="st">"dodge"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span></span>
+<span>    x <span class="op">=</span> <span class="st">"Infection type"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"DALYs per 100,000"</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"Comparison of Germany vs EU/EEA DALY burden (2011–2012)"</span>,</span>
+<span>    fill <span class="op">=</span> <span class="st">"Region"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_minimal</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="interactive-shiny-apps">Interactive Shiny Apps<a class="anchor" aria-label="anchor" href="#interactive-shiny-apps"></a>
